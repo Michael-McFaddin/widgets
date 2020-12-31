@@ -5,12 +5,19 @@ import axios from 'axios';
 
 const Search = () => {
   const [term, setTerm] = useState('programming');
+  const [debouncedTerm, setDeboucedTerm] = useState(term);
   const [results, setResults] = useState([]);
 
-  console.log(results);
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDeboucedTerm(term);
+    }, 1000);
 
-  // Three ways to run an async function in useEffect
-  // #1, most common
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [term]);
+
   useEffect(() => {
     const search = async () => {
       const { data } = await axios.get('https://en.wikipedia.org/w/api.php', {
@@ -19,17 +26,47 @@ const Search = () => {
           list: 'search',
           origin: '*',
           format: 'json',
-          srsearch: term
-        },
+          srsearch: debouncedTerm
+        }
       });
 
       setResults(data.query.search);
     };
-    // default option to not run search if there is no term
-    if (term) {
-      search();
-    }
-  }, [term]);
+    search();
+  }, [debouncedTerm]);
+
+  // Three ways to run an async function in useEffect
+  // #1, most common
+  // useEffect(() => {
+  //   const search = async () => {
+  //     const { data } = await axios.get('https://en.wikipedia.org/w/api.php', {
+  //       params: {
+  //         action: 'query',
+  //         list: 'search',
+  //         origin: '*',
+  //         format: 'json',
+  //         srsearch: term
+  //       },
+  //     });
+
+  //     setResults(data.query.search);
+  //   };
+
+  //   if (term && !results.length) {
+  //     search();
+  //   } else {
+  //     const timeoutId = setTimeout(() => {
+  //       if (term) { // default option to not run search if there is no term
+  //         search();
+  //       }
+  //     }, 500);
+
+  //     return () => {
+  //       clearTimeout(timeoutId);
+  //     };
+  //   }
+    
+  // }, [term]);
   // #2
   // useEffect(() => {
   //   (async () => {
@@ -43,7 +80,7 @@ const Search = () => {
   //       console.log(response.data);
   //     });
   // }, [term]);
-  
+
   const renderedResults = results.map(result => {
     return (
       <div key={result.pageid} className="item">
