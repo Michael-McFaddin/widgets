@@ -104,6 +104,8 @@ const Search = () => {
     <div>
       <div className="ui form">
         <div className="field">
+          <h2>Search Wikipedia</h2>
+          <hr />
           <label>Enter Search Term</label>
           <input
             className="input"
